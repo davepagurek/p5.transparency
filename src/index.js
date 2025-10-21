@@ -173,7 +173,7 @@ export default function transparency(p5, fn = p5.prototype) {
         super(
           renderer,
           vertSrc,
-          fragSrc.includes('uniform bool isClipping') ? fragSrc : fragSrc.replace(
+          !fragSrc || fragSrc.includes('uniform bool isClipping') ? fragSrc : fragSrc.replace(
             /(OUT_COLOR|gl_FragColor)\s*[\+\-\*\/]?=\s*([^;]|\n)+;/mg,
             `$& if (!isClipping && $1.a <= 0.) discard;`
           ).replace('void main', 'uniform bool isClipping;\nvoid main'),
