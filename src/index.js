@@ -161,7 +161,7 @@ export default function transparency(p5, fn = p5.prototype) {
     const oldFragSrc = p5.Shader.prototype.fragSrc
     p5.Shader.prototype.fragSrc = function() {
       const fragSrc = oldFragSrc.call(this)
-      return fragSrc.includes('uniform bool isClipping') ? fragSrc : fragSrc.replace(
+      return !fragSrc || fragSrc.includes('uniform bool isClipping') ? fragSrc : fragSrc.replace(
           /(OUT_COLOR|gl_FragColor)\s*[\+\-\*\/]?=\s*([^;]|\n)+;/mg,
           `$& if (!isClipping && $1.a <= 0.) discard;`
         ).replace('void main', 'uniform bool isClipping;\nvoid main')
