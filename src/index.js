@@ -220,7 +220,7 @@ export default function transparency(p5, fn = p5.prototype) {
   }
 }
 
-if (typeof p5 !== undefined) {
+if (typeof p5 !== 'undefined') {
   if (p5.registerAddon) {
     p5.registerAddon(transparency);
   } else {
