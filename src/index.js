@@ -108,6 +108,7 @@ export default function transparency(p5, fn = p5.prototype) {
   }
 
   const boundaries = [
+    { method: 'begin', onClass: p5.Framebuffer },
     { method: 'end', onClass: p5.Framebuffer },
     { method: 'loadPixels', onClass: p5.Framebuffer },
     { method: 'get', onClass: p5.Framebuffer },
@@ -125,6 +126,12 @@ export default function transparency(p5, fn = p5.prototype) {
       if (!after) this.transparencyManager().hitFlushBoundary()
       let result = oldMethod.apply(this, args)
       if (after) {
+        if (method === 'begin') {
+          if (!this._hasFinishedSetup) {
+            // in constructor, don't flush
+            return result
+          }
+        }
         if (result instanceof Promise) {
           result = result.then((val) => {
             this.transparencyManager().hitFlushBoundary()
@@ -132,6 +139,11 @@ export default function transparency(p5, fn = p5.prototype) {
           })
         } else {
           this.transparencyManager().hitFlushBoundary()
+        }
+      }
+      if (method === 'end') {
+        if (!this._hasFinishedSetup) {
+          this._hasFinishedSetup = true
         }
       }
       return result
