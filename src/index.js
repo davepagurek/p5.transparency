@@ -30,6 +30,9 @@ export default function transparency(p5, fn = p5.prototype) {
     drawOrderedItem(item) {
       this.pushQueue()
       this.drawingItem++
+      const gl = this.renderer.drawingContext
+      const prevFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING)
+      gl.bindFramebuffer(gl.FRAMEBUFFER, item.framebuffer)
       const draw = () => {
         this.renderer._pInst.push()
         const states = this.renderer.states || this.renderer
@@ -69,10 +72,13 @@ export default function transparency(p5, fn = p5.prototype) {
       }
       this.drawingItem--
       this.flushQueue()
+      gl.bindFramebuffer(gl.FRAMEBUFFER, prevFramebuffer)
       this.popQueue()
     }
     
     drawTransparent(cb, { twoSided } = {}) {
+      const gl = this.renderer.drawingContext
+      const framebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING)
       const states = this.renderer.states || this.renderer
       let currentState
       if (this.renderer.states) {
@@ -102,6 +108,7 @@ export default function transparency(p5, fn = p5.prototype) {
         uPMatrix,
         twoSided,
         currentState,
+        framebuffer,
       }
       this.queues[this.queues.length - 1].push(item)
     }
