@@ -108,8 +108,8 @@ export default function transparency(p5, fn = p5.prototype) {
   }
 
   const boundaries = [
-    { method: 'begin', onClass: p5.Framebuffer },
-    { method: 'end', onClass: p5.Framebuffer },
+    { method: 'begin', onClass: p5.Framebuffer, condition: (fb) => !fb._hasFinishedSetup },
+    { method: 'end', onClass: p5.Framebuffer, callback: (fb) => fb._hasFinishedSetup = true },
     { method: 'loadPixels', onClass: p5.Framebuffer },
     { method: 'get', onClass: p5.Framebuffer },
     { method: 'loadPixels', onClass: p5 },
@@ -117,7 +117,7 @@ export default function transparency(p5, fn = p5.prototype) {
     { method: 'redraw', onClass: p5, after: true },
     { method: '_clearClip', onClass: p5.RendererGL },
   ]
-  for (const { method, onClass, after, condition } of boundaries) {
+  for (const { method, onClass, after, condition, callback } of boundaries) {
     const oldMethod = onClass.prototype[method]
     onClass.prototype[method] = function(...args) {
       if (condition && condition(this)) {
@@ -126,12 +126,6 @@ export default function transparency(p5, fn = p5.prototype) {
       if (!after) this.transparencyManager().hitFlushBoundary()
       let result = oldMethod.apply(this, args)
       if (after) {
-        if (method === 'begin') {
-          if (!this._hasFinishedSetup) {
-            // in constructor, don't flush
-            return result
-          }
-        }
         if (result instanceof Promise) {
           result = result.then((val) => {
             this.transparencyManager().hitFlushBoundary()
@@ -141,11 +135,7 @@ export default function transparency(p5, fn = p5.prototype) {
           this.transparencyManager().hitFlushBoundary()
         }
       }
-      if (method === 'end') {
-        if (!this._hasFinishedSetup) {
-          this._hasFinishedSetup = true
-        }
-      }
+      if (callback) callback(this)
       return result
     }
   }
