@@ -121,7 +121,7 @@ export default function transparency(p5, fn = p5.prototype) {
     const oldMethod = onClass.prototype[method]
     onClass.prototype[method] = function(...args) {
       if (condition && condition(this)) {
-        const result = oldMethod.apply(this, args)
+        let result = oldMethod.apply(this, args)
         if (result instanceof Promise) {
           result = result.then((val) => {
             if (callback) callback(this);
